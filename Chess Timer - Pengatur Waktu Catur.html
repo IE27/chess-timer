@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <title>Chess Timer - Pengatur Waktu Catur</title>
+  <style>
+    /* Modern CSS Reset dengan optimasi mobile terbaru */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    :root {
+      /* Modern color palette dengan kontras tinggi */
+      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --player1-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      --player2-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      --active-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+      --surface-dark: #1e1e2e;
+      --surface-light: #313244;
+      --text-primary: #cdd6f4;
+      --text-secondary: #a6adc8;
+      --accent: #f38ba8;
+      --warning: #fab387;
+      --critical: #f38ba8;
+      --success: #a6e3a1;
+      
+      /* Spacing system */
+      --space-xs: 0.5rem;
+      --space-sm: 0.75rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2rem;
+      --space-2xl: 3rem;
+      
+      /* Border radius system */
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      
+      /* Typography scale */
+      --text-xs: 0.75rem;
+      --text-sm: 0.875rem;
+      --text-base: 1rem;
+      --text-lg: 1.125rem;
+      --text-xl: 1.25rem;
+      --text-2xl: 1.5rem;
+      --text-3xl: 1.875rem;
+      --text-4xl: 2.25rem;
+      --text-display: clamp(2.5rem, 8vw, 4rem);
+    }
+    
+    html {
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
+      -moz-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--surface-dark);
+      color: var(--text-primary);
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      touch-action: manipulation;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Utility classes untuk konsistensi */
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .shadow-soft {
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .shadow-strong {
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Modern animated background */
+    .animated-bg {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .animated-bg::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(79, 172, 254, 0.05) 0%, transparent 50%);
+      animation: float 20s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+      33% { transform: translate(30px, -50px) rotate(120deg); }
+      66% { transform: translate(-20px, 20px) rotate(240deg); }
+    }
+    
+    /* Menu dengan design modern */
+    #menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      height: 100dvh;
+      padding: var(--space-xl);
+      background: var(--primary-gradient);
+      position: relative;
+    }
+    
+    #menu .content {
+      z-index: 1;
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+    
+    #menu h1 {
+      font-size: var(--text-4xl);
+      font-weight: 700;
+      margin-bottom: var(--space-sm);
+      background: linear-gradient(45deg, #fff, #e2e8f0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    #menu .subtitle {
+      font-size: var(--text-lg);
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: var(--space-2xl);
+      font-weight: 300;
+    }
+    
+    /* Form elements dengan design modern */
+    .form-group {
+      margin-bottom: var(--space-lg);
+    }
+    
+    .form-label {
+      display: block;
+      font-size: var(--text-sm);
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: var(--space-xs);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    #timeSelect {
+      width: 100%;
+      padding: var(--space-lg);
+      font-size: var(--text-lg);
+      border: none;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.95);
+      color: var(--surface-dark);
+      font-weight: 500;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 12px center;
+      background-repeat: no-repeat;
+      background-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    #timeSelect:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    .btn {
+      width: 100%;
+      padding: var(--space-lg) var(--space-xl);
+      font-size: var(--text-lg);
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      min-height: 56px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #fff 0%, #f1f5f9 100%);
+      color: var(--surface-dark);
+      box-shadow: var(--shadow-soft);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-strong);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+    
+    /* Game board dengan layout yang lebih modern */
+    #board {
+      display: none;
+      height: 100vh;
+      height: 100dvh;
+      width: 100vw;
+      flex-direction: column;
+      background: var(--surface-dark);
+      position: relative;
+    }
+    
+    .timers {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+    }
+    
+    /* Timer dengan design yang lebih menarik */
+    .timer-side {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: none;
+      outline: none;
+      overflow: hidden;
+    }
+    
+    .timer-side::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.02) 50%, transparent 70%);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+    
+    .timer-side:active::before {
+      transform: translateX(100%);
+    }
+    
+    #timer1 {
+      background: var(--player1-gradient);
+      color: white;
+      transform: rotate(180deg);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    #timer2 {
+      background: var(--player2-gradient);
+      color: white;
+      border-top: 2px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .timer-side.active {
+      background: var(--active-gradient) !important;
+      color: var(--surface-dark) !important;
+      font-weight: 700;
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse-glow {
+      0%, 100% { 
+        box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.4);
+      }
+      50% { 
+        box-shadow: inset 0 0 0 8px rgba(255, 255, 255, 0.6);
+      }
+    }
+    
+    .timer-display {
+      font-size: var(--text-display);
+      font-weight: 300;
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', Consolas, monospace;
+      letter-spacing: -0.02em;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Status indicator yang lebih elegan */
+    .status-indicator {
+      position: absolute;
+      top: var(--space-lg);
+      right: var(--space-lg);
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .timer-side.active .status-indicator {
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+      transform: scale(1.5);
+    }
+    
+    /* Player labels */
+    .player-label {
+      position: absolute;
+      top: var(--space-lg);
+      left: var(--space-lg);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      opacity: 0.7;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    /* Warning states dengan animasi yang lebih smooth */
+    .time-warning {
+      animation: warning-pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes warning-pulse {
+      0%, 100% { 
+        filter: brightness(1) saturate(1);
+      }
+      50% { 
+        filter: brightness(1.3) saturate(1.5);
+      }
+    }
+    
+    .time-critical {
+      animation: critical-flash 1s ease-in-out infinite;
+    }
+    
+    @keyframes critical-flash {
+      0%, 100% { 
+        background: var(--critical) !important;
+        filter: brightness(1);
+      }
+      50% { 
+        background: var(--critical) !important;
+        filter: brightness(1.5);
+      }
+    }
+    
+    /* Controls dengan design yang lebih modern */
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: var(--space-lg);
+      background: var(--surface-light);
+      gap: var(--space-md);
+      min-height: 80px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .control-btn {
+      padding: var(--space-md) var(--space-lg);
+      font-size: var(--text-base);
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      min-width: 100px;
+      min-height: 44px;
+      transition: all 0.2s ease;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .control-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.1);
+      transform: scale(0);
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+    
+    .control-btn:active::after {
+      transform: scale(2);
+    }
+    
+    #resetBtn {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+    
+    #pauseBtn {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    /* Responsive breakpoints */
+    @media (max-height: 600px) {
+      #menu h1 { font-size: var(--text-3xl); }
+      #menu .subtitle { font-size: var(--text-base); margin-bottom: var(--space-lg); }
+      .timer-display { font-size: clamp(2rem, 6vw, 3rem); }
+      .controls { padding: var(--space-md); min-height: 70px; }
+    }
+    
+    @media (max-height: 500px) {
+      .timer-display { font-size: clamp(1.5rem, 5vw, 2.5rem); }
+      .controls { padding: var(--space-sm); }
+      .control-btn { padding: var(--space-sm) var(--space-md); font-size: var(--text-sm); }
+    }
+    
+    /* Landscape mode optimization */
+    @media (orientation: landscape) and (max-height: 500px) {
+      .timers { flex-direction: row; }
+      
+      #timer1 {
+        transform: rotate(0deg);
+        border-bottom: none;
+        border-right: 2px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      #timer2 {
+        border-top: none;
+        border-left: 2px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      .timer-display { font-size: clamp(1.8rem, 4vw, 2.5rem); }
+    }
+    
+    /* Dark mode enhancements */
+    @media (prefers-color-scheme: dark) {
+      #timeSelect {
+        background: rgba(255, 255, 255, 0.95);
+        color: var(--surface-dark);
+      }
+    }
+    
+    /* Accessibility improvements */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+    
+    /* High contrast mode */
+    @media (prefers-contrast: high) {
+      .timer-side {
+        border: 2px solid white;
+      }
+      
+      .timer-side.active {
+        border: 4px solid black;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="menu" class="animated-bg">
+    <div class="content">
+      <h1>Chess Timer</h1>
+      <p class="subtitle">Pengatur Waktu Catur Digital</p>
+      
+      <div class="form-group">
+        <label for="timeSelect" class="form-label">Pilih Durasi Permainan</label>
+        <select id="timeSelect">
+          <option value="1">⚡ Bullet - 1 Menit</option>
+          <option value="3">🏃 Blitz - 3 Menit</option>
+          <option value="5" selected>⭐ Rapid - 5 Menit</option>
+          <option value="10">🎯 Classical - 10 Menit</option>
+          <option value="15">🏛️ Tournament - 15 Menit</option>
+          <option value="30">🔥 Marathon - 30 Menit</option>
+        </select>
+      </div>
+      
+      <button id="startBtn" class="btn btn-primary">
+        🚀 Mulai Permainan
+      </button>
+    </div>
+  </div>
+
+  <div id="board">
+    <div class="timers">
+      <div id="timer1" class="timer-side">
+        <div class="player-label">Player 1</div>
+        <div class="timer-display">05:00</div>
+        <div class="status-indicator"></div>
+      </div>
+      <div id="timer2" class="timer-side">
+        <div class="player-label">Player 2</div>
+        <div class="timer-display">05:00</div>
+        <div class="status-indicator"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="resetBtn" class="control-btn">🔄 Reset</button>
+      <button id="pauseBtn" class="control-btn">⏸️ Pause</button>
+    </div>
+  </div>
+
+  <script>
+    // Enhanced Mobile Chess Timer dengan optimasi performa tinggi
+    class OptimizedChessTimer {
+      constructor() {
+        // Core game state dengan better organization
+        this.gameState = {
+          totalTime: 0,
+          time1: 0,
+          time2: 0,
+          activePlayer: null,
+          isPaused: false,
+          isGameStarted: false,
+          isGameEnded: false
+        };
+        
+        // Performance optimization flags
+        this.performanceFlags = {
+          isProcessingTouch: false,
+          lastTouchTime: 0,
+          animationFrameId: null,
+          shouldUpdateDisplay: true
+        };
+        
+        // Timer management
+        this.timerInterval = null;
+        this.tickRate = 1000; // 1 second intervals
+        
+        // Cache DOM elements untuk performa optimal
+        this.elements = this.cacheElements();
+        
+        // Audio context untuk feedback yang lebih baik
+        this.initializeAudio();
+        
+        // Initialize event listeners dan setup
+        this.initialize();
+      }
+      
+      // Cache semua DOM elements untuk menghindari repeated queries
+      cacheElements() {
+        return {
+          menu: document.getElementById('menu'),
+          board: document.getElementById('board'),
+          timeSelect: document.getElementById('timeSelect'),
+          startBtn: document.getElementById('startBtn'),
+          timer1: document.getElementById('timer1'),
+          timer2: document.getElementById('timer2'),
+          timer1Display: document.querySelector('#timer1 .timer-display'),
+          timer2Display: document.querySelector('#timer2 .timer-display'),
+          resetBtn: document.getElementById('resetBtn'),
+          pauseBtn: document.getElementById('pauseBtn')
+        };
+      }
+      
+      // Initialize audio untuk feedback yang lebih baik
+      initializeAudio() {
+        this.audioContext = null;
+        try {
+          // Lazy initialization untuk audio context
+          if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+            this.audioEnabled = true;
+          }
+        } catch (e) {
+          this.audioEnabled = false;
+        }
+      }
+      
+      // Play audio feedback dengan frequency yang berbeda
+      playAudioFeedback(type = 'click') {
+        if (!this.audioEnabled) return;
+        
+        try {
+          if (!this.audioContext) {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          
+          const oscillator = this.audioContext.createOscillator();
+          const gainNode = this.audioContext.createGain();
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(this.audioContext.destination);
+          
+          // Different frequencies untuk different actions
+          const frequencies = {
+            click: 800,
+            warning: 600,
+            critical: 400,
+            gameEnd: 1000
+          };
+          
+          oscillator.frequency.setValueAtTime(frequencies[type] || 800, this.audioContext.currentTime);
+          oscillator.type = 'sine';
+          
+          gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+          
+          oscillator.start(this.audioContext.currentTime);
+          oscillator.stop(this.audioContext.currentTime + 0.1);
+        } catch (e) {
+          // Fallback ke vibration jika audio gagal
+          this.vibrateFeedback(type);
+        }
+      }
+      
+      // Enhanced vibration feedback dengan pattern yang berbeda
+      vibrateFeedback(type = 'click') {
+        if (!('vibrate' in navigator)) return;
+        
+        const vibrationPatterns = {
+          click: [30],
+          switch: [50],
+          pause: [100],
+          reset: [200, 100, 200],
+          warning: [100, 50, 100],
+          critical: [200, 100, 200, 100, 200],
+          gameEnd: [500, 200, 500]
+        };
+        
+        navigator.vibrate(vibrationPatterns[type] || [30]);
+      }
+      
+      // Format time dengan konsistensi dan edge case handling
+      formatTime(seconds) {
+        // Handle negative values dan edge cases
+        if (seconds < 0) seconds = 0;
+        if (!Number.isInteger(seconds)) seconds = Math.floor(seconds);
+        
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+      }
+      
+      // Optimized display update dengan throttling
+      updateDisplay() {
+        if (!this.performanceFlags.shouldUpdateDisplay) return;
+        
+        // Update timer displays
+        this.elements.timer1Display.textContent = this.formatTime(this.gameState.time1);
+        this.elements.timer2Display.textContent = this.formatTime(this.gameState.time2);
+        
+        // Update active states dengan efficient class management
+        this.elements.timer1.classList.toggle('active', this.gameState.activePlayer === 1);
+        this.elements.timer2.classList.toggle('active', this.gameState.activePlayer === 2);
+        
+        // Update warning states
+        this.updateWarningStates();
+        
+        // Throttle display updates untuk better performance
+        this.performanceFlags.shouldUpdateDisplay = false;
+        setTimeout(() => {
+          this.performanceFlags.shouldUpdateDisplay = true;
+        }, 16); // ~60fps throttling
+      }
+      
+      // Enhanced warning system dengan multiple thresholds
+      updateWarningStates() {
+        const warningThreshold = Math.max(60, Math.floor(this.gameState.totalTime * 0.15)); // 15% atau minimum 1 menit
+        const criticalThreshold = Math.max(30, Math.floor(this.gameState.totalTime * 0.05)); // 5% atau minimum 30 detik
+        
+        // Player 1 warnings
+        this.updatePlayerWarning(this.elements.timer1, this.gameState.time1, warningThreshold, criticalThreshold);
+        
+        // Player 2 warnings
+        this.updatePlayerWarning(this.elements.timer2, this.gameState.time2, warningThreshold, criticalThreshold);
+      }
+      
+      // Helper function untuk update warning individual player
+      updatePlayerWarning(element, timeLeft, warningThreshold, criticalThreshold) {
+        element.classList.remove('time-warning', 'time-critical');
+        
+        if (timeLeft <= criticalThreshold && timeLeft > 0) {
+          element.classList.add('time-critical');
+        } else if (timeLeft <= warningThreshold && timeLeft > criticalThreshold) {
+          element.classList.add('time-warning');
+        }
+      }
+      
+      // High-precision timer tick dengan performance monitoring
+      tick() {
+        if (this.gameState.isPaused || this.gameState.isGameEnded) return;
+        
+        const startTime = performance.now();
+        
+        // Update active player's time
+        if (this.gameState.activePlayer === 1 && this.gameState.time1 > 0) {
+          this.gameState.time1--;
+        } else if (this.gameState.activePlayer === 2 && this.gameState.time2 > 0) {
+          this.gameState.time2--;
+        }
+        
+        // Update display
+        this.updateDisplay();
+        
+        // Check for warnings dan play audio feedback
+        this.checkTimeWarnings();
+        
+        // Check for game end
+        if (this.gameState.time1 <= 0 || this.gameState.time2 <= 0) {
+          this.endGame();
+        }
+        
+        // Performance monitoring (optional, bisa di-disable untuk production)
+        const endTime = performance.now();
+        if (endTime - startTime > 16) { // Log jika tick memakan waktu > 16ms
+          console.warn(`Slow tick detected: ${endTime - startTime}ms`);
+        }
+      }
+      
+      // Check time warnings dan provide audio feedback
+      checkTimeWarnings() {
+        const criticalThreshold = Math.max(30, Math.floor(this.gameState.totalTime * 0.05));
+        const warningThreshold = Math.max(60, Math.floor(this.gameState.totalTime * 0.15));
+        
+        const activeTime = this.gameState.activePlayer === 1 ? this.gameState.time1 : this.gameState.time2;
+        
+        if (activeTime === criticalThreshold) {
+          this.playAudioFeedback('critical');
+          this.vibrateFeedback('critical');
+        } else if (activeTime === warningThreshold) {
+          this.playAudioFeedback('warning');
+          this.vibrateFeedback('warning');
+        }
+      }
+      
+      // Enhanced game end dengan better UX
+      endGame() {
+        this.gameState.isGameEnded = true;
+        this.gameState.activePlayer = null;
+        this.gameState.isGameStarted = false;
+        
+        // Clear timer
+        if (this.timerInterval) {
+          clearInterval(this.timerInterval);
+          this.timerInterval = null;
+        }
+        
+        // Determine winner
+        const winner = this.gameState.time1 <= 0 ? 'Player 2' : 'Player 1';
+        const loser = this.gameState.time1 <= 0 ? 'Player 1' : 'Player 2';
+        
+        // Enhanced feedback
+        this.playAudioFeedback('gameEnd');
+        this.vibrateFeedback('gameEnd');
+        
+        // Update display one final time
+        this.updateDisplay();
+        
+        // Show result dengan delay untuk better UX
+        setTimeout(() => {
+          const timeUsed = this.gameState.time1 <= 0 ? 
+            this.formatTime(this.gameState.totalTime - this.gameState.time2) : 
+            this.formatTime(this.gameState.totalTime - this.gameState.time1);
+            
+          alert(`🏆 ${winner} Menang!\n\n⏰ ${loser} kehabisan waktu\n🕐 Waktu yang digunakan: ${timeUsed}`);
+        }, 500);
+      }
+      
+      // Enhanced game start dengan better state management
+      startGame() {
+        const selectedMinutes = parseInt(this.elements.timeSelect.value);
+        
+        // Reset dan initialize game state
+        this.gameState = {
+          totalTime: selectedMinutes * 60,
+          time1: selectedMinutes * 60,
+          time2: selectedMinutes * 60,
+          activePlayer: 1, // Player 1 mulai duluan
+          isPaused: false,
+          isGameStarted: true,
+          isGameEnded: false
+        };
+        
+        // Switch views dengan smooth transition
+        this.elements.menu.style.display = 'none';
+        this.elements.board.style.display = 'flex';
+        
+        // Start timer
+        this.updateDisplay();
+        this.timerInterval = setInterval(() => this.tick(), this.tickRate);
+        
+        // Reset control button states
+        this.elements.pauseBtn.innerHTML = '⏸️ Pause';
+        
+        // Provide feedback
+        this.playAudioFeedback('click');
+        this.vibrateFeedback('switch');
+        
+        // Reset performance flags
+        this.performanceFlags.isProcessingTouch = false;
+        this.performanceFlags.lastTouchTime = 0;
+      }
+      
+      // Enhanced player switching dengan debouncing dan validation
+      switchPlayer(targetPlayer) {
+        const currentTime = performance.now();
+        
+        // Comprehensive validation
+        if (!this.gameState.isGameStarted || 
+            this.gameState.isPaused || 
+            this.gameState.isGameEnded ||
+            this.performanceFlags.isProcessingTouch ||
+            this.gameState.activePlayer === targetPlayer ||
+            currentTime - this.performanceFlags.lastTouchTime < 200) { // 200ms debounce
+          return;
+        }
+        
+        // Set processing flag untuk prevent multiple calls
+        this.performanceFlags.isProcessingTouch = true;
+        this.performanceFlags.lastTouchTime = currentTime;
+        
+        // Immediate visual feedback
+        const targetElement = targetPlayer === 1 ? this.elements.timer1 : this.elements.timer2;
+        targetElement.style.transform += ' scale(0.98)';
+        
+        // Switch active player
+        this.gameState.activePlayer = targetPlayer;
+        this.updateDisplay();
+        
+        // Audio dan haptic feedback
+        this.playAudioFeedback('click');
+        this.vibrateFeedback('switch');
+        
+        // Reset visual feedback dan processing flag
+        setTimeout(() => {
+          targetElement.style.transform = targetElement.style.transform.replace(' scale(0.98)', '');
+          this.performanceFlags.isProcessingTouch = false;
+        }, 150);
+      }
+      
+      // Enhanced pause/resume dengan better state management
+      togglePause() {
+        if (!this.gameState.isGameStarted || this.gameState.isGameEnded) return;
+        
+        if (this.timerInterval) {
+          // Pause game
+          clearInterval(this.timerInterval);
+          this.timerInterval = null;
+          this.gameState.isPaused = true;
+          this.elements.pauseBtn.innerHTML = '▶️ Resume';
+          
+          // Visual feedback untuk paused state
+          this.elements.board.style.filter = 'brightness(0.7)';
+          
+        } else {
+          // Resume game
+          this.timerInterval = setInterval(() => this.tick(), this.tickRate);
+          this.gameState.isPaused = false;
+          this.elements.pauseBtn.innerHTML = '⏸️ Pause';
+          
+          // Remove paused visual feedback
+          this.elements.board.style.filter = 'none';
+        }
+        
+        // Feedback
+        this.playAudioFeedback('click');
+        this.vibrateFeedback('pause');
+      }
+      
+      // Enhanced reset dengan confirmation dan cleanup
+      resetGame() {
+        // Optional confirmation untuk prevent accidental resets
+        if (this.gameState.isGameStarted && !this.gameState.isGameEnded) {
+          if (!confirm('⚠️ Yakin ingin mereset permainan?\nProgress akan hilang!')) {
+            return;
+          }
+        }
+        
+        // Complete cleanup
+        if (this.timerInterval) {
+          clearInterval(this.timerInterval);
+          this.timerInterval = null;
+        }
+        
+        // Reset all states
+        this.gameState = {
+          totalTime: 0,
+          time1: 0,
+          time2: 0,
+          activePlayer: null,
+          isPaused: false,
+          isGameStarted: false,
+          isGameEnded: false
+        };
+        
+        this.performanceFlags = {
+          isProcessingTouch: false,
+          lastTouchTime: 0,
+          animationFrameId: null,
+          shouldUpdateDisplay: true
+        };
+        
+        // Clear all visual states
+        this.elements.timer1.className = 'timer-side';
+        this.elements.timer2.className = 'timer-side';
+        this.elements.board.style.filter = 'none';
+        
+        // Return to menu
+        this.elements.board.style.display = 'none';
+        this.elements.menu.style.display = 'flex';
+        
+        // Feedback
+        this.playAudioFeedback('click');
+        this.vibrateFeedback('reset');
+      }
+      
+      // Setup optimized event listeners
+      setupEventListeners() {
+        // Start button dengan multi-event support
+        const startHandler = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.startGame();
+        };
+        
+        this.elements.startBtn.addEventListener('touchstart', startHandler, { passive: false });
+        this.elements.startBtn.addEventListener('click', startHandler);
+        
+        // Timer event handlers dengan optimized touch handling
+        this.setupTimerEvents(this.elements.timer1, 1);
+        this.setupTimerEvents(this.elements.timer2, 2);
+        
+        // Control buttons
+        this.setupControlButton(this.elements.resetBtn, () => this.resetGame());
+        this.setupControlButton(this.elements.pauseBtn, () => this.togglePause());
+        
+        // Keyboard shortcuts untuk accessibility
+        document.addEventListener('keydown', (e) => {
+          if (!this.gameState.isGameStarted) return;
+          
+          switch(e.key) {
+            case ' ':
+              e.preventDefault();
+              this.togglePause();
+              break;
+            case 'r':
+              e.preventDefault();
+              this.resetGame();
+              break;
+            case '1':
+              e.preventDefault();
+              this.switchPlayer(1);
+              break;
+            case '2':
+              e.preventDefault();
+              this.switchPlayer(2);
+              break;
+          }
+        });
+      }
+      
+      // Setup individual timer events dengan advanced touch handling
+      setupTimerEvents(element, playerNumber) {
+        let touchStartTime = 0;
+        let touchStartY = 0;
+        let hasMoved = false;
+        
+        // Touchstart - fastest response
+        element.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          touchStartTime = performance.now();
+          touchStartY = e.touches[0].clientY;
+          hasMoved = false;
+          
+          // Immediate visual feedback
+          element.style.filter = 'brightness(0.9)';
+          
+        }, { passive: false });
+        
+        // Touchmove - track movement untuk distinguish dari tap
+        element.addEventListener('touchmove', (e) => {
+          e.preventDefault();
+          
+          const currentY = e.touches[0].clientY;
+          const deltaY = Math.abs(currentY - touchStartY);
+          
+          if (deltaY > 10) { // 10px tolerance
+            hasMoved = true;
+            element.style.filter = 'none';
+          }
+        }, { passive: false });
+        
+        // Touchend - execute action jika valid tap
+        element.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const touchDuration = performance.now() - touchStartTime;
+          
+          // Reset visual feedback
+          element.style.filter = 'none';
+          
+          // Execute switch jika valid tap (tidak terlalu lama, tidak ada movement)
+          if (!hasMoved && touchDuration < 500) {
+            this.switchPlayer(playerNumber);
+          }
+          
+        }, { passive: false });
+        
+        // Click fallback untuk desktop
+        element.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Hanya execute jika bukan dari touch event
+          if (performance.now() - touchStartTime > 100) {
+            this.switchPlayer(playerNumber);
+          }
+        });
+        
+        // Prevent context menu
+        element.addEventListener('contextmenu', (e) => e.preventDefault());
+      }
+      
+      // Setup control button dengan consistent handling
+      setupControlButton(element, handler) {
+        const buttonHandler = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handler();
+        };
+        
+        element.addEventListener('touchstart', buttonHandler, { passive: false });
+        element.addEventListener('click', buttonHandler);
+      }
+      
+      // Setup advanced mobile optimizations
+      setupMobileOptimizations() {
+        // Prevent default touch behaviors
+        document.addEventListener('touchstart', () => {}, { passive: true });
+        document.addEventListener('touchmove', (e) => {
+          // Allow scrolling pada menu, prevent pada game board
+          if (this.gameState.isGameStarted) {
+            e.preventDefault();
+          }
+        }, { passive: false });
+        
+        // Prevent double-tap zoom
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+          const now = performance.now();
+          if (now - lastTouchEnd <= 300) {
+            e.preventDefault();
+          }
+          lastTouchEnd = now;
+        }, { passive: false });
+        
+        // Handle orientation changes
+        window.addEventListener('orientationchange', () => {
+          // Delay untuk allow layout reflow
+          setTimeout(() => {
+            this.updateDisplay();
+            // Force repaint untuk fix potential rendering issues
+            document.body.style.display = 'none';
+            document.body.offsetHeight; // Trigger reflow
+            document.body.style.display = '';
+          }, 100);
+        });
+        
+        // Handle visibility changes (background/foreground)
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden && this.gameState.isGameStarted && !this.gameState.isPaused) {
+            // Auto-pause saat app ke background
+            this.togglePause();
+          }
+        });
+        
+        // Performance monitoring
+        this.setupPerformanceMonitoring();
+      }
+      
+      // Setup performance monitoring untuk debugging
+      setupPerformanceMonitoring() {
+        if (typeof performance === 'undefined') return;
+        
+        // Monitor frame rate
+        let frameCount = 0;
+        let lastFpsTime = performance.now();
+        
+        const monitorFPS = () => {
+          frameCount++;
+          const currentTime = performance.now();
+          
+          if (currentTime - lastFpsTime >= 1000) {
+            const fps = frameCount;
+            frameCount = 0;
+            lastFpsTime = currentTime;
+            
+            // Log low FPS warnings
+            if (fps < 30) {
+              console.warn(`Low FPS detected: ${fps}`);
+            }
+          }
+          
+          requestAnimationFrame(monitorFPS);
+        };
+        
+        requestAnimationFrame(monitorFPS);
+      }
+      
+      // Main initialization
+      initialize() {
+        // Setup all event listeners
+        this.setupEventListeners();
+        
+        // Setup mobile optimizations
+        this.setupMobileOptimizations();
+        
+        // Initialize audio context pada first user interaction
+        document.addEventListener('touchstart', () => {
+          if (this.audioEnabled && !this.audioContext) {
+            try {
+              this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+              this.audioEnabled = false;
+            }
+          }
+        }, { once: true });
+        
+        // Log initialization
+        console.log('🎯 Optimized Chess Timer initialized successfully');
+        console.log('📱 Mobile optimizations active');
+        console.log('🔊 Audio feedback:', this.audioEnabled ? 'enabled' : 'disabled');
+        console.log('📳 Vibration feedback:', 'vibrate' in navigator ? 'enabled' : 'disabled');
+      }
+    }
+    
+    // Initialize timer saat DOM ready dengan error handling
+    let chessTimer;
+    
+    const initializeTimer = () => {
+      try {
+        chessTimer = new OptimizedChessTimer();
+      } catch (error) {
+        console.error('❌ Failed to initialize chess timer:', error);
+        // Fallback untuk basic functionality
+        alert('⚠️ Terjadi error saat inisialisasi. Silakan refresh halaman.');
+      }
+    };
+    
+    // DOM ready check dengan multiple fallbacks
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeTimer);
+    } else {
+      // DOM sudah ready
+      initializeTimer();
+    }
+    
+    // Additional fallback jika DOMContentLoaded tidak fire
+    window.addEventListener('load', () => {
+      if (!chessTimer) {
+        initializeTimer();
+      }
+    });
+    
+    // Global error handling
+    window.addEventListener('error', (e) => {
+      console.error('❌ Global error:', e.error);
+    });
+    
+    // Unhandled promise rejection handling
+    window.addEventListener('unhandledrejection', (e) => {
+      console.error('❌ Unhandled promise rejection:', e.reason);
+    });
+  </script>
+</body>
+</html>
